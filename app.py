@@ -1,11 +1,11 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_restplus import Api, Resource, fields
 from flask.views import MethodView
 
 import glob
 import json
 
-from config import DEFINITIONS2
+from config import DEFINITIONS2, DEV
 
 from Protocols import transformation
 # Init app
@@ -57,8 +57,6 @@ transformation_model = api.model("transformation", {
     "plate": fields.Raw(),
     })
 
-
-
 @ns_protocols.route('/transformation')
 class TransformationRoute(Resource):
     @ns_protocols.doc('transformation')
@@ -66,6 +64,8 @@ class TransformationRoute(Resource):
     def post(self):
         robot = request.get_json()['robot']
         plate = request.get_json()['plate']
+        if plate['plate_type'] not in ['miniprep','dna']:
+            return jsonify({'message': 'Not raw DNA'},400)
         return jsonify(transformation.transformation(robot,plate))
 
 

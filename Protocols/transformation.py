@@ -72,23 +72,27 @@ def transformation(robot,plate,breadcrumb=None,strain='E.coli Top10',transforman
         updated_wells = []
         for well in plate['wells']:
             if well['address'] == transfer[0]:
-                old_well = well
-                well['volume'] = well['volume'] - transformation_volume
+                if type(well['volume']) == int or type(well['volume']) == float:
+                    well['volume'] = well['volume'] - transformation_volume
                 new_well = {'address': transfer[1],
                     'media': media,
                     'organism': strain,
                     'plate_uuid': new_plate['uuid'],
                     'quantity': None,
-                    'samples': [sample['uuid'] for sample in old_well['samples']],
+                    'samples': [sample['uuid'] for sample in well['samples']],
                     'volume': transformant_volume+transformation_volume,
                    'well_type': 'transformation'}
                 new_wells.append(new_well)
             updated_wells.append(well)
-        plate['wells'] = updated_wells
-    
+    updated_sample_well =[]
+    for well in updated_wells:
+        del well['samples']
+        updated_sample_well.append(well)
+
+    del plate['wells'] 
     new_plate['protocol_uuid'] = protocol['uuid']
     output = {'Plate': [new_plate,plate],
-             'Well': new_wells,
+             'Well': new_wells+updated_sample_well,
              'Protocol': [protocol]}
     return output
     
